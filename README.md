@@ -4,6 +4,16 @@ Danh mục hoa: CRUD hoa, giá (BigDecimal + mã tiền tệ), soft delete, opti
 
 Cổng local: `8081`
 
+## Phân quyền
+
+| API | Quyền |
+|---|---|
+| `GET /api/v1/flowers`, `GET /api/v1/flowers/{id}` | public |
+| `POST`, `PUT`, `DELETE /api/v1/flowers/**` | permission `flower:write` (ADMIN, SHOP_MANAGER) |
+
+Service tự kiểm tra JWT bằng public key từ `IDENTITY_JWKS_URI` (mặc định `http://localhost:8083/.well-known/jwks.json`),
+nên gọi thẳng cổng 8081 bỏ qua gateway vẫn bị chặn. `created_by`/`updated_by` = claim `sub` của token.
+
 ## Chạy
 
 Cách khuyên dùng: chạy cả hệ thống từ repo `flower-shop-workspace` (`./clone-all.sh` rồi `./run-local.sh`).
