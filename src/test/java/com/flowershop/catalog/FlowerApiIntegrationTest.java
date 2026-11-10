@@ -140,4 +140,25 @@ class FlowerApiIntegrationTest {
         String createdBy = jdbcTemplate.queryForObject("select created_by from flower where sku = 'AUDIT-01'", String.class);
         assertThat(createdBy).isEqualTo("manager-uuid");
     }
+
+    @Test
+    void getBySku_isPublic_andReturnsInactiveToo() throws Exception {
+        String body = mockMvc.perform(post("/api/v1/flowers").with(manager()).contentType(APPLICATION_JSON)
+                        .content(createJson("TULIP-SKU-01", "150000")))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        Integer id = com.jayway.jsonpath.JsonPath.read(body, "$.data.id");
+
+        mockMvc.perform(get("/api/v1/flowers/sku/TULIP-SKU-01"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(id))
+                .andExpect(jsonPath("$.data.status").value("ACTIVE"));
+
+        mockMvc.perform(delete("/api/v1/flowers/" + id).with(manager())).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/flowers/sku/TULIP-SKU-01"))
+                .andExpect(jsonPath("$.data.status").value("INACTIVE"));
+
+        mockMvc.perform(get("/api/v1/flowers/sku/KHONG-CO"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("CAT-404-001"));
+    }
 }

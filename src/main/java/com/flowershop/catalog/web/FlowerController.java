@@ -36,6 +36,12 @@ public class FlowerController {
         return ApiResponse.success(service.getById(id));
     }
 
+    /** Tra theo mã nghiệp vụ: inventory/order chỉ lưu SKU, không lưu id kỹ thuật của catalog. */
+    @GetMapping("/sku/{sku}")
+    public ApiResponse<FlowerResponse> getBySku(@PathVariable String sku) {
+        return ApiResponse.success(service.getBySku(sku));
+    }
+
     @GetMapping
     public ApiResponse<PageResponse<FlowerResponse>> list(@RequestParam(defaultValue = "0") int page,
                                                           @RequestParam(defaultValue = "20") int size) {

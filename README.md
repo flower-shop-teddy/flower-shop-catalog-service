@@ -8,7 +8,7 @@ Cổng local: `8081`
 
 | API | Quyền |
 |---|---|
-| `GET /api/v1/flowers`, `GET /api/v1/flowers/{id}` | public |
+| `GET /api/v1/flowers`, `GET /api/v1/flowers/{id}`, `GET /api/v1/flowers/sku/{sku}` (trả cả hoa đã ngừng bán, có `status`) | public |
 | `POST`, `PUT`, `DELETE /api/v1/flowers/**` | permission `flower:write` (ADMIN, SHOP_MANAGER) |
 
 Service tự kiểm tra JWT bằng public key từ `IDENTITY_JWKS_URI` (mặc định `http://localhost:8083/.well-known/jwks.json`),
