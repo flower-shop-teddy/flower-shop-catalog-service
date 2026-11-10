@@ -55,6 +55,13 @@ public class FlowerService {
         return FlowerMapper.toResponse(findOrThrow(id));
     }
 
+    /** Trả cả sản phẩm đã ngừng kinh doanh (có status): service khác (inventory, order) tự quyết định xử lý. */
+    @Transactional(readOnly = true)
+    public FlowerResponse getBySku(String sku) {
+        return repository.findBySku(sku).map(FlowerMapper::toResponse)
+                .orElseThrow(() -> new BusinessException(CatalogErrorCode.FLOWER_NOT_FOUND));
+    }
+
     @Transactional(readOnly = true)
     public PageResponse<FlowerResponse> listActive(int page, int size) {
         int safePage = Math.max(page, 0);

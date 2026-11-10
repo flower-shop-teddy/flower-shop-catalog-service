@@ -10,9 +10,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-/** API có version (/v1): sau này đổi format thì làm /v2, client cũ vẫn chạy. */
+/**
+ * API có version (/v1): sau này đổi format thì làm /v2, client cũ vẫn chạy.
+ * Quyền kiểm tra theo PERMISSION (flower:write), không theo role: muốn cho role khác được sửa hoa
+ * chỉ cần gán permission trong identity-service, không phải sửa code ở đây.
+ */
 @RestController
 @RequestMapping("/api/v1/flowers")
 @RequiredArgsConstructor
@@ -21,6 +26,7 @@ public class FlowerController {
     private final FlowerService service;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('flower:write')")
     public ResponseEntity<ApiResponse<FlowerResponse>> create(@Valid @RequestBody CreateFlowerRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(service.create(req)));
     }
@@ -30,6 +36,12 @@ public class FlowerController {
         return ApiResponse.success(service.getById(id));
     }
 
+    /** Tra theo mã nghiệp vụ: inventory/order chỉ lưu SKU, không lưu id kỹ thuật của catalog. */
+    @GetMapping("/sku/{sku}")
+    public ApiResponse<FlowerResponse> getBySku(@PathVariable String sku) {
+        return ApiResponse.success(service.getBySku(sku));
+    }
+
     @GetMapping
     public ApiResponse<PageResponse<FlowerResponse>> list(@RequestParam(defaultValue = "0") int page,
                                                           @RequestParam(defaultValue = "20") int size) {
@@ -37,12 +49,14 @@ public class FlowerController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('flower:write')")
     public ApiResponse<FlowerResponse> update(@PathVariable Long id, @Valid @RequestBody UpdateFlowerRequest req) {
         return ApiResponse.success(service.update(id, req));
     }
 
     /** "Xóa" = ngừng kinh doanh (soft delete). Dữ liệu vẫn còn để đối chiếu đơn hàng cũ. */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('flower:write')")
     public ApiResponse<Void> deactivate(@PathVariable Long id) {
         service.deactivate(id);
         return ApiResponse.success("Đã ngừng kinh doanh sản phẩm", null);
